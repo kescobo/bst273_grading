@@ -92,10 +92,10 @@ grades = pd.DataFrame({
 
 folder = os.path.abspath(args.project_folder)
 if not os.path.isdir(folder):
-    logger.error("Must pass a folder name to --project-folder")
+    logger.error("Must pass a folder to --project-folder")
     raise IOError()
 
-st_name = re.match(r"^([a-z]+)_?", os.path.basename(folder))
+st_name = re.search(r"^([a-z]+)_?", os.path.basename(folder))
 if st_name:
     st_name = st_name.group(1)
     logger.info("Starting to grade {}'s project".format(st_name))
@@ -111,7 +111,7 @@ logger.debug("Files: {}".format(files))
 # file testing
 def find_file(file_list, pattern):
     for f in file_list:
-        m = re.match(pattern, f)
+        m = re.search(pattern, f)
         if m:
             return f
 
@@ -151,22 +151,43 @@ def parse_readme(readme_path):
     with open(readme_path) as rm:
         readme_content = rm.read()
 
-    parsed = re.compile(r"\n(\d+)\.").split(readme_content)
+    parsed = re.compile(r"^(\d+)\.", re.MULTILINE).split(readme_content)
     answers = {}
     for i in range(len(parsed)):
-        if re.match(r"^\d+$", parsed[i]):
+        if re.search(r"^\d+$", parsed[i]):
             n = int(parsed[i])
             if n in answers:
                 logging.warning("Two answers for README.md question {}. Skipping".format(n))
             else:
                 a = parsed[i+1]
-                m = re.match("ANSWER:([\S\s]+)")
-                answers[n] = m.captures[1]
+                m = re.search("ANSWER:([\S\s]+)", a)
+                if m:
+                    answers[n] = m.group(1)
+                else:
+                    answers[n] = a
 
     return answers
 
 readme_answers = parse_readme(readme)
+logger.debug(readme_answers)
 
+q1 = readme_answers[1]
+logger.debug(q1)
+email = re.search(r"\b([\w\-\.]+@([\w\-]+\.)+[\w-]{2,4})\b", q1)
+if email:
+    email = email.group(1)
+else:
+    logger.warning("Couldn't find e-mail address")
+    email = None
 
+repo_url = re.search(r"github.com\/(\w+\/\w+(\.git)?)\b", q1)
+if repo_url:
+    repo_url = repo_url.group(1)
+else:
+    logger.warning("Couldn't find github repo url")
+    repo_url = None
+
+logger.debug(email)
+logger.debug(repo_url)
 
 logger.debug(grades)
