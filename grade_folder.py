@@ -25,6 +25,12 @@ parser.add_argument(
     help="append grade to table",
     )
 
+parser.add_argument(
+    "--skip-readme",
+    action="store_true",
+    help="Do not attempt grade README file (useful for testing)",
+    )
+
 parser.add_argument("-v", "--verbose", help="Display info status messages", action="store_true")
 parser.add_argument("-q", "--quiet", help="Suppress most output", action="store_true")
 parser.add_argument("-d", "--debug", help="set logging to debug", action="store_true")
@@ -190,21 +196,24 @@ else:
 logger.debug(email)
 logger.debug(repo_url)
 
-for q in range(9):
-    qn = q+1
-    score = 0
-    if qn in readme_answers:
-        good = input(
-            "\n ## Is the following answer reasonable for README Question {}? y/[n]\n{}: ".format(
-                qn, readme_answers[qn]))
-        if good.lower() == "y" or good.lower() == "yes":
-            if qn in [3,5,6,7]:
-                score = 2
-            else:
-                score = 1
-    else:
-        logger.warning("Readme answer {} not found".format(qn))
+if not args.skip_readme:
+    for q in range(9):
+        qn = q+1
+        score = 0
+        if qn in readme_answers:
+            good = input(
+                "\n ## Is the following answer reasonable for README Question {}? y/[n]\n{}: ".format(
+                    qn, readme_answers[qn]))
+            if good.lower() == "y" or good.lower() == "yes":
+                if qn in [3,5,6,7]:
+                    score = 2
+                else:
+                    score = 1
+        else:
+            logger.warning("Readme answer {} not found".format(qn))
 
-    grades.at[0, "rm_{}".format(qn)] = score
+        grades.at[0, "rm_{}".format(qn)] = score
+else:
+    logging.warning("Skipping README grading - complete manually")
 
 logger.debug(grades)
