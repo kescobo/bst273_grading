@@ -117,6 +117,7 @@ def find_file(file_list, pattern):
 
     return None
 
+
 if find_file(files, r"(readme|README)"):
     readme = os.path.join(folder, find_file(files, r"(readme|README)"))
     logger.info("Found README at {}".format(readme))
@@ -144,5 +145,28 @@ if find_file(files, r"^\w+.(pdf|png)$"):
     grades.at[0, "output"] = 4
 else:
     demo_output = None
+
+
+def parse_readme(readme_path):
+    with open(readme_path) as rm:
+        readme_content = rm.read()
+
+    parsed = re.compile(r"\n(\d+)\.").split(readme_content)
+    answers = {}
+    for i in range(len(parsed)):
+        if re.match(r"^\d+$", parsed[i]):
+            n = int(parsed[i])
+            if n in answers:
+                logging.warning("Two answers for README.md question {}. Skipping".format(n))
+            else:
+                a = parsed[i+1]
+                m = re.match("ANSWER:([\S\s]+)")
+                answers[n] = m.captures[1]
+
+    return answers
+
+readme_answers = parse_readme(readme)
+
+
 
 logger.debug(grades)
