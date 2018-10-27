@@ -90,8 +90,23 @@ grades = pd.DataFrame({
     "ex_default"       : [0],
     })
 
-files = os.listdir(args.project_folder)
+folder = os.path.abspath(args.project_folder)
+if not os.path.isdir(folder):
+    logger.error("Must pass a folder name to --project-folder")
+    raise IOError()
+
+st_name = re.match(r"^([a-z]+)_?", os.path.basename(folder))
+if st_name:
+    st_name = st_name.group(1)
+    logger.info("Starting to grade {}'s project".format(st_name))
+    grades.at[0, "name"] = st_name
+else:
+    logger.error("Folder name invalid - must start with student name")
+    raise IOError()
+
+files = os.listdir(folder)
 logger.debug("Files: {}".format(files))
+
 
 # file testing
 def find_file(file_list, pattern):
@@ -103,8 +118,31 @@ def find_file(file_list, pattern):
     return None
 
 if find_file(files, r"(readme|README)"):
-    readme = os.path.join(args.project_folder, find_file(files, r"(readme|README)"))
+    readme = os.path.join(folder, find_file(files, r"(readme|README)"))
     logger.info("Found README at {}".format(readme))
 else:
-    logger.error("No README found in {}. Must check manually".format(args.project_folder))
-    raise(ValueError())
+    logger.error("No README found in {}. Must check manually".format(folder))
+    raise ValueError()
+
+if find_file(files, r"^\w+.py$"):
+    script = os.path.join(folder, find_file(files, r"^\w+.py$"))
+    logger.info("Found script at {}".format(script))
+    grades.at[0, "script"] = 10
+else:
+    script = None
+
+if find_file(files, r"^\w+.tsv$"):
+    demo_input = os.path.join(folder, find_file(files, r"^\w+.tsv$"))
+    logger.info("Found demo_input at {}".format(demo_input))
+    grades.at[0, "input"] = 4
+else:
+    demo_input = None
+
+if find_file(files, r"^\w+.(pdf|png)$"):
+    demo_output = os.path.join(folder, find_file(files, r"^\w+.(pdf|png)$"))
+    logger.info("Found demo_output at {}".format(demo_output))
+    grades.at[0, "output"] = 4
+else:
+    demo_output = None
+
+logger.debug(grades)
