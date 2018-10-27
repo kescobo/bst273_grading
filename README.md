@@ -60,3 +60,7 @@ ex_default       | Execution      | Default file name         | 4
 6. Any errors / points missed by script
 
 ## To run
+
+```sh
+python grade_folder.py -i {PATH_TO_FOLDER} -o grades.tsv --append -v
+```

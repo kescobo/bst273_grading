@@ -77,39 +77,25 @@ else:
 logger.addHandler(sh) # add handler to logger
 logger.addHandler(fh)
 
-grades = pd.DataFrame({
-    "name"             : ["out of"],
-    "input"            : [4, 0],
-    "output"           : [4, 0],
-    "script"           : [10, 0],
-    "repo"             : [2, 0],
-    "repo_files"       : [6, 0],
-    "repo_match"       : [2, 0],
-    "rm_1"             : [1, 0],
-    "rm_2"             : [1, 0],
-    "rm_3"             : [2, 0],
-    "rm_4"             : [1, 0],
-    "rm_5"             : [2, 0],
-    "rm_6"             : [2, 0],
-    "rm_7"             : [2, 0],
-    "rm_8"             : [1, 0],
-    "rm_9"             : [1, 0],
-    "ex_help"          : [4, 0],
-    "ex_nostrat"       : [10, 0],
-    "ex_nostrat_valid" : [20, 0],
-    "ex_strat"         : [5, 0],
-    "ex_strat_valid"   : [10, 0],
-    "ex_axis"          : [2, 0],
-    "ex_legend"        : [4, 0],
-    "ex_default"       : [5, 0],
-    "total"            : [100, 0]})
+grade_fields = ["input","output","script",
+                "repo","repo_files","repo_match",
+                "rm_1","rm_2","rm_3","rm_4","rm_5","rm_6","rm_7","rm_8","rm_9",
+                "ex_help","ex_nostrat","ex_nostrat_valid","ex_strat","ex_strat_valid","ex_axis","ex_legend","ex_default",
+                "total"]
+grade_values = [4,4,10,2,
+                6,2,1,
+                1,2,1,2,2,2,1,1,
+                4,10,20,5,10,2,4,5,
+                100]
 
+
+grades = pd.DataFrame(grade_values, columns=["outof"], index=grade_fields)
 
 st_name = re.search(r"^([a-z]+)_?", os.path.basename(folder))
 if st_name:
     st_name = st_name.group(1)
     logger.info("Starting to grade {}'s project".format(st_name))
-    grades.at[1, "name"] = st_name
+    grades[st_name] = [0 for _ in range(len(grade_values))]
 else:
     logger.error("Folder name invalid - must start with student name")
     raise IOError()
@@ -139,21 +125,21 @@ else:
 if find_file(files, r"^\w+.py$"):
     script = os.path.join(folder, find_file(files, r"^\w+.py$"))
     logger.info("Found script at {}".format(script))
-    grades.at[1, "script"] = 10
+    grades.at["script", st_name] = 10
 else:
     script = None
 
 if find_file(files, r"^\w+.tsv$"):
     demo_input = os.path.join(folder, find_file(files, r"^\w+.tsv$"))
     logger.info("Found demo_input at {}".format(demo_input))
-    grades.at[1, "input"] = 4
+    grades.at["input", st_name] = 4
 else:
     demo_input = None
 
 if find_file(files, r"^\w+.(pdf|png)$"):
     demo_output = os.path.join(folder, find_file(files, r"^\w+.(pdf|png)$"))
     logger.info("Found demo_output at {}".format(demo_output))
-    grades.at[1, "output"] = 4
+    grades.at["output", st_name] = 4
 else:
     demo_output = None
 
@@ -218,7 +204,7 @@ if not args.skip_input:
         else:
             logger.warning("Readme answer {} not found".format(qn))
 
-        grades.at[1, "rm_{}".format(qn)] = score
+        grades.at["rm_{}".format(qn), st_name] = score
 else:
     logger.warning("Skipping README grading - complete manually")
 
@@ -249,7 +235,7 @@ logger.debug(cmds)
 if script:
     c = call(["python", script, "--help"])
     if c == 0:
-        grades.at[1, "ex_help"] = 4
+        grades.at["ex_help", st_name] = 4
 
 ## Github
 
@@ -263,7 +249,7 @@ repo = git.Repo.init(repo_path)
 origin = repo.create_remote("origin", "git@github.com:{}".format(repo_url))
 
 if origin.exists():
-    grades.at[1, "repo"] = 2
+    grades.at["repo", st_name] = 2
 
     repo.git.pull("origin", "master")
 
@@ -271,7 +257,7 @@ if origin.exists():
                         [r"(readme|README)", r"^\w+.py$", r"^\w+.tsv$", r"^\w+.(pdf|png)$"])]
     logger.debug(repo_files)
     repo_files_score = 6 * 4 / sum([f != None for f in repo_files])
-    grades.at[1, "repo_files"] = repo_files_score
+    grades.at["repo_files", st_name] = repo_files_score
 
     diff = filecmp.cmpfiles(folder, repo_path, repo_files)
     logger.debug(diff)
@@ -281,23 +267,29 @@ if origin.exists():
     else:
         repo_match_score = len(diff[1]) / sum([len(d) for d in diff])
 
-    grades.at[1, "repo_match"] = repo_match_score
+    grades.at["repo_match", st_name] = repo_match_score
 
-for g in list(grades):
-    if grades.at[1, g] == 0 and not args.skip_input and not g == "total":
-        score = input("What is the score for {}? : ".format(g))
-        if type(score) == int:
-            grades.at[1, g] = score
+for g in grades.index:
+    if grades.at[g, st_name] == 0 and not args.skip_input and not g == "total":
+        score = input("What is the score for {} (out of {})? : ".format(g, grades.at[g, "outof"]))
+        if score:
+            score = int(score)
         else:
-            logging.info("Score for {} staying 0".format(g))
+            score = 0
+            logging.info("Leaving score for {} at 0".format(g))
+        logger.debug(type(score))
+        grades.at[g, st_name] = score
 
+grades.at["total", st_name] = sum(grades.loc[grade_fields[0:-1], st_name])
 
 logger.debug(grades)
 
-grades.transpose(copy=True).to_csv(os.path.join(repo_path, "grades.tsv"), sep='\t')
+grades.to_csv(os.path.join(repo_path, "grades.tsv"), sep='\t')
 
 if args.append and os.path.exists(args.class_grades):
-    grades.to_csv(args.class_grades, mode="a", sep='\t', header=False)
+    gradesfile = pd.read_csv(args.class_grades, sep='\t')
+    gradesfile[st_name] = grades[st]
+    gradesfile.to_csv(args.class_grades, sep='\t')
 else:
     grades.to_csv(args.class_grades, sep='\t')
 
