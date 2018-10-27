@@ -44,18 +44,19 @@ ex_default       | Execution      | Default file name         | 4
     1. Files match -- +2
 1. Execution
     1. Help menu -- +4
-    2. Can make plots
-        1. No-strat -- +10
-        2. Strat -- +5
-    1. Default file name -- +4
+    2. scripts run without errors
 
 ## Manual inspection
 
-1. Plots are valid
+1. Can make plots
+    1. No-strat -- +10
+    2. Strat -- +5
+2. Default file name -- +4
+3. Plots are valid
     1. No-strat -- +20
     2. Strat -- +10
-1. Axis labels -- +2
-1. Legend on strat -- +4
-2. Any errors / points missed by script
+4. Axis labels -- +2
+5. Legend on strat -- +4
+6. Any errors / points missed by script
 
 ## To run
