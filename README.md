@@ -10,15 +10,15 @@ script           | Files included | script                    | 10
 repo             | Github         | Github repo exists        | 2
 repo_files       | Github         | Github includes all files | 6
 repo_match       | Github         | Files match               | 2
-rm_basic         | README         | 1 - name/email/github     | 1
-rm_exp           | README         | 2 - experience            | 1
-rm_script        | README         | 3 - description of script | 2
-rm_modules       | README         | 4 - module list           | 1
-rm_input         | README         | 5 - description of input  | 2
-rm_cmd           | README         | 6 - sample commands       | 2
-rm_output        | README         | 7 - description of output | 2
-rm_best          | README         | 8 - best part of class    | 1
-rm_worst         | README         | 9 - worst part of class   | 1
+rm_1             | README         | 1 - name/email/github     | 1
+rm_2             | README         | 2 - experience            | 1
+rm_3             | README         | 3 - description of script | 2
+rm_4             | README         | 4 - module list           | 1
+rm_5             | README         | 5 - description of input  | 2
+rm_6             | README         | 6 - sample commands       | 2
+rm_7             | README         | 7 - description of output | 2
+rm_8             | README         | 8 - best part of class    | 1
+rm_9             | README         | 9 - worst part of class   | 1
 ex_help          | Execution      | Reasonable --help menu    | 4
 ex_nostrat       | Execution      | Can make no-strat plot    | 10
 ex_nostrat_valid | Execution      | Valid no-strat plot       | 20
@@ -44,18 +44,23 @@ ex_default       | Execution      | Default file name         | 4
     1. Files match -- +2
 1. Execution
     1. Help menu -- +4
-    2. Can make plots
-        1. No-strat -- +10
-        2. Strat -- +5
-    1. Default file name -- +4
+    2. scripts run without errors
 
 ## Manual inspection
 
-1. Plots are valid
+1. Can make plots
+    1. No-strat -- +10
+    2. Strat -- +5
+2. Default file name -- +4
+3. Plots are valid
     1. No-strat -- +20
     2. Strat -- +10
-1. Axis labels -- +2
-1. Legend on strat -- +4
-2. Any errors / points missed by script
+4. Axis labels -- +2
+5. Legend on strat -- +4
+6. Any errors / points missed by script
 
 ## To run
+
+```sh
+python grade_folder.py -i {PATH_TO_FOLDER} -o grades.tsv --append -v
+```
