@@ -71,15 +71,15 @@ grades = pd.DataFrame({
     "repo"             : [0],
     "repo_files"       : [0],
     "repo_match"       : [0],
-    "rm_basic"         : [0],
-    "rm_exp"           : [0],
-    "rm_script"        : [0],
-    "rm_modules"       : [0],
-    "rm_input"         : [0],
-    "rm_cmd"           : [0],
-    "rm_output"        : [0],
-    "rm_best"          : [0],
-    "rm_worst"         : [0],
+    "rm_1"             : [0],
+    "rm_2"             : [0],
+    "rm_3"             : [0],
+    "rm_4"             : [0],
+    "rm_5"             : [0],
+    "rm_6"             : [0],
+    "rm_7"             : [0],
+    "rm_8"             : [0],
+    "rm_9"             : [0],
     "ex_help"          : [0],
     "ex_nostrat"       : [0],
     "ex_nostrat_valid" : [0],
@@ -189,5 +189,22 @@ else:
 
 logger.debug(email)
 logger.debug(repo_url)
+
+for q in range(9):
+    qn = q+1
+    score = 0
+    if qn in readme_answers:
+        good = input(
+            "\n ## Is the following answer reasonable for README Question {}? y/[n]\n{}: ".format(
+                qn, readme_answers[qn]))
+        if good.lower() == "y" or good.lower() == "yes":
+            if qn in [3,5,6,7]:
+                score = 2
+            else:
+                score = 1
+    else:
+        logger.warning("Readme answer {} not found".format(qn))
+
+    grades.at[0, "rm_{}".format(qn)] = score
 
 logger.debug(grades)
