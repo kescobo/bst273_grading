@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import argparse
+import re
 import pandas as pd
 import os
 import git
@@ -24,9 +25,9 @@ parser.add_argument(
     help="append grade to table",
     )
 
-parser.add_argument("-v", "--verbose", help="Display debug status messages", action="store_true")
+parser.add_argument("-v", "--verbose", help="Display info status messages", action="store_true")
 parser.add_argument("-q", "--quiet", help="Suppress most output", action="store_true")
-parser.add_argument("--debug", help="set logging to debug", action="store_true")
+parser.add_argument("-d", "--debug", help="set logging to debug", action="store_true")
 
 parser.add_argument("-l", "--log",
     help="File path for log file")
@@ -51,17 +52,13 @@ fh.setFormatter(formatter)
 
 # set level based on args
 if args.debug:
-    sh.setLevel(logging.DEBUG)
-    fh.setLevel(logging.DEBUG)
+    logger.setLevel(logging.DEBUG)
 elif args.verbose:
-    sh.setLevel(logging.INFO)
-    fh.setLevel(logging.INFO)
+    logger.setLevel(logging.INFO)
 elif args.quiet:
-    sh.setLevel(logging.ERROR)
-    fh.setLevel(logging.ERROR)
+    logger.setLevel(logging.ERROR)
 else:
-    sh.setLevel(logging.WARNING)
-    fh.setLevel(logging.WARNING)
+    logger.setLevel(logging.WARNING)
 
 logger.addHandler(sh) # add handler to logger
 logger.addHandler(fh)
@@ -94,4 +91,20 @@ grades = pd.DataFrame({
     })
 
 files = os.listdir(args.project_folder)
-logging.debug("Files: {}".format(files))
+logger.debug("Files: {}".format(files))
+
+# file testing
+def find_file(file_list, pattern):
+    for f in file_list:
+        m = re.match(pattern, f)
+        if m:
+            return f
+
+    return None
+
+if find_file(files, r"(readme|README)"):
+    readme = os.path.join(args.project_folder, find_file(files, r"(readme|README)"))
+    logger.info("Found README at {}".format(readme))
+else:
+    logger.error("No README found in {}. Must check manually".format(args.project_folder))
+    raise(ValueError())
