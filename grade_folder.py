@@ -29,9 +29,9 @@ parser.add_argument(
     )
 
 parser.add_argument(
-    "--skip-readme",
+    "--skip-input",
     action="store_true",
-    help="Do not attempt grade README file (useful for testing)",
+    help="Do not request user input for grades (useful for testing)",
     )
 
 parser.add_argument("-v", "--verbose", help="Display info status messages", action="store_true")
@@ -78,38 +78,38 @@ logger.addHandler(sh) # add handler to logger
 logger.addHandler(fh)
 
 grades = pd.DataFrame({
-    "name"             : "",
-    "input"            : [0],
-    "output"           : [0],
-    "script"           : [0],
-    "repo"             : [0],
-    "repo_files"       : [0],
-    "repo_match"       : [0],
-    "rm_1"             : [0],
-    "rm_2"             : [0],
-    "rm_3"             : [0],
-    "rm_4"             : [0],
-    "rm_5"             : [0],
-    "rm_6"             : [0],
-    "rm_7"             : [0],
-    "rm_8"             : [0],
-    "rm_9"             : [0],
-    "ex_help"          : [0],
-    "ex_nostrat"       : [0],
-    "ex_nostrat_valid" : [0],
-    "ex_strat"         : [0],
-    "ex_strat_valid"   : [0],
-    "ex_axis"          : [0],
-    "ex_legend"        : [0],
-    "ex_default"       : [0],
-    })
+    "name"             : ["out of"],
+    "input"            : [4, 0],
+    "output"           : [4, 0],
+    "script"           : [10, 0],
+    "repo"             : [2, 0],
+    "repo_files"       : [6, 0],
+    "repo_match"       : [2, 0],
+    "rm_1"             : [1, 0],
+    "rm_2"             : [1, 0],
+    "rm_3"             : [2, 0],
+    "rm_4"             : [1, 0],
+    "rm_5"             : [2, 0],
+    "rm_6"             : [2, 0],
+    "rm_7"             : [2, 0],
+    "rm_8"             : [1, 0],
+    "rm_9"             : [1, 0],
+    "ex_help"          : [4, 0],
+    "ex_nostrat"       : [10, 0],
+    "ex_nostrat_valid" : [20, 0],
+    "ex_strat"         : [5, 0],
+    "ex_strat_valid"   : [10, 0],
+    "ex_axis"          : [2, 0],
+    "ex_legend"        : [4, 0],
+    "ex_default"       : [5, 0],
+    "total"            : [100, 0]})
 
 
 st_name = re.search(r"^([a-z]+)_?", os.path.basename(folder))
 if st_name:
     st_name = st_name.group(1)
     logger.info("Starting to grade {}'s project".format(st_name))
-    grades.at[0, "name"] = st_name
+    grades.at[1, "name"] = st_name
 else:
     logger.error("Folder name invalid - must start with student name")
     raise IOError()
@@ -139,21 +139,21 @@ else:
 if find_file(files, r"^\w+.py$"):
     script = os.path.join(folder, find_file(files, r"^\w+.py$"))
     logger.info("Found script at {}".format(script))
-    grades.at[0, "script"] = 10
+    grades.at[1, "script"] = 10
 else:
     script = None
 
 if find_file(files, r"^\w+.tsv$"):
     demo_input = os.path.join(folder, find_file(files, r"^\w+.tsv$"))
     logger.info("Found demo_input at {}".format(demo_input))
-    grades.at[0, "input"] = 4
+    grades.at[1, "input"] = 4
 else:
     demo_input = None
 
 if find_file(files, r"^\w+.(pdf|png)$"):
     demo_output = os.path.join(folder, find_file(files, r"^\w+.(pdf|png)$"))
     logger.info("Found demo_output at {}".format(demo_output))
-    grades.at[0, "output"] = 4
+    grades.at[1, "output"] = 4
 else:
     demo_output = None
 
@@ -202,7 +202,7 @@ else:
 logger.debug(email)
 logger.debug(repo_url)
 
-if not args.skip_readme:
+if not args.skip_input:
     for q in range(9):
         qn = q+1
         score = 0
@@ -218,7 +218,7 @@ if not args.skip_readme:
         else:
             logger.warning("Readme answer {} not found".format(qn))
 
-        grades.at[0, "rm_{}".format(qn)] = score
+        grades.at[1, "rm_{}".format(qn)] = score
 else:
     logger.warning("Skipping README grading - complete manually")
 
@@ -249,7 +249,7 @@ logger.debug(cmds)
 if script:
     c = call(["python", script, "--help"])
     if c == 0:
-        grades.at[0, "ex_help"] = 4
+        grades.at[1, "ex_help"] = 4
 
 ## Github
 
@@ -263,7 +263,7 @@ repo = git.Repo.init(repo_path)
 origin = repo.create_remote("origin", "git@github.com:{}".format(repo_url))
 
 if origin.exists():
-    grades.at[0, "repo"] = 2
+    grades.at[1, "repo"] = 2
 
     repo.git.pull("origin", "master")
 
@@ -271,7 +271,7 @@ if origin.exists():
                         [r"(readme|README)", r"^\w+.py$", r"^\w+.tsv$", r"^\w+.(pdf|png)$"])]
     logger.debug(repo_files)
     repo_files_score = 6 * 4 / sum([f != None for f in repo_files])
-    grades.at[0, "repo_files"] = repo_files_score
+    grades.at[1, "repo_files"] = repo_files_score
 
     diff = filecmp.cmpfiles(folder, repo_path, repo_files)
     logger.debug(diff)
