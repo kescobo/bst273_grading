@@ -281,14 +281,30 @@ if origin.exists():
     else:
         repo_match_score = len(diff[1]) / sum([len(d) for d in diff])
 
-    grades.at[0, "repo_match"] = repo_match_score
+    grades.at[1, "repo_match"] = repo_match_score
 
-grades.transpose(copy=True).to_csv(os.path.join(repo_path, "grades.tsv"), sep='\t')
+for g in list(grades):
+    if grades.at[1, g] == 0 and not args.skip_input and not g == "total":
+        score = input("What is the score for {}? : ".format(g))
+        if type(score) == int:
+            grades.at[1, g] = score
+        else:
+            logging.info("Score for {} staying 0".format(g))
 
 
 logger.debug(grades)
+
+grades.transpose(copy=True).to_csv(os.path.join(repo_path, "grades.tsv"), sep='\t')
 
 if args.append and os.path.exists(args.class_grades):
     grades.to_csv(args.class_grades, mode="a", sep='\t', header=False)
 else:
     grades.to_csv(args.class_grades, sep='\t')
+
+if origin.exists():
+    shutil.copy(logpath, os.path.join(repo_path, "grading.log"))
+    repo.git.checkout("-b", "graded")
+
+    repo.git.add(os.path.join(repo_path, "grades.tsv"))
+    repo.git.add(os.path.join(repo_path, "grading.log"))
+    repo.git.commit("-m", "add grades")
