@@ -264,7 +264,7 @@ if origin.exists():
     repo.git.pull("origin", "master")
 
     repo_files = [f for f in map(lambda p: find_file(os.listdir(repo_path), p),
-                        [r"(readme|README)", r"^[\w\.]+.py$", r"^[\w\.]+.tsv$", r"^[\w\.]+.(pdf|png)$"])]
+                        [r"(readme|README)", r"^[\w\.]+.py$", r"^[\w\.]+.tsv$", r"^[\w\.]+.(pdf|png|jpg)$"])]
     logger.debug(repo_files)
     repo_files_score = 6 * 4 / sum([f != None for f in repo_files])
     grades.at["repo_files", st_name] = repo_files_score
@@ -302,7 +302,7 @@ grades.to_csv(os.path.join(repo_path, "grades.tsv"), sep='\t')
 
 if args.append and os.path.exists(args.class_grades):
     gradesfile = pd.read_csv(args.class_grades, sep='\t')
-    gradesfile[st_name] = grades[st]
+    gradesfile[st_name] = grades[st_name]
     gradesfile.to_csv(args.class_grades, sep='\t')
 else:
     grades.to_csv(args.class_grades, sep='\t')
