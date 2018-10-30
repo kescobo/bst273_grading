@@ -188,7 +188,7 @@ else:
     logger.warning("Couldn't find e-mail address")
     email = None
 
-repo_url = re.search(r"github.com\/(\w+\/\w+(\.git)?)\b", q1)
+repo_url = re.search(r"github.com\/([\w\-]+\/[\w\-]+(\.git)?)\b", q1)
 if repo_url:
     repo_url = repo_url.group(1)
 else:
@@ -258,11 +258,15 @@ os.mkdir(repo_path)
 repo = git.Repo.init(repo_path)
 origin = repo.create_remote("origin", "git@github.com:{}".format(repo_url))
 
-if origin.exists():
-    grades.at["repo", st_name] = 2
+success = False
 
+try:
     repo.git.pull("origin", "master")
+    success = True
+except:
+    logger.warn("Could not pull from Git repo")
 
+if success:
     repo_files = [f for f in map(lambda p: find_file(os.listdir(repo_path), p),
                         [r"(readme|README)", r"^[\w\.]+.py$", r"^[\w\.]+.tsv$", r"^[\w\.]+.(pdf|png|jpg)$"])]
     logger.debug(repo_files)
