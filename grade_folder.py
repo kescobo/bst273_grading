@@ -77,12 +77,12 @@ else:
 logger.addHandler(sh) # add handler to logger
 logger.addHandler(fh)
 
-grade_fields = ["input","output","script",
+grade_fields = ["student_id", "subid", "input","output","script",
                 "repo","repo_files","repo_match",
                 "rm_1","rm_2","rm_3","rm_4","rm_5","rm_6","rm_7","rm_8","rm_9",
                 "ex_help","ex_nostrat","ex_nostrat_valid","ex_strat","ex_strat_valid","ex_axis","ex_legend","ex_default",
                 "total"]
-grade_values = [4,4,10,2,
+grade_values = [0,0,4,4,10,2,
                 6,2,1,
                 1,2,1,2,2,2,1,1,
                 4,10,20,5,10,2,4,5,
@@ -91,11 +91,20 @@ grade_values = [4,4,10,2,
 
 grades = pd.DataFrame(grade_values, columns=["outof"], index=grade_fields)
 
-st_name = re.search(r"^([a-z]+)_?", os.path.basename(folder))
-if st_name:
-    st_name = st_name.group(1)
+parse_folder = re.search(r"^([a-z]+)_(late_)?(\d+)_(\d+)", os.path.basename(folder))
+if parse_folder:
+    st_name = parse_folder.group(1)
+    sid = int(parse_folder.group(2))
+    subid = int(parse_folder.group(3))
+
+    late = False
+    if "_late_" in folder:
+        late = True
+
     logger.info("Starting to grade {}'s project".format(st_name))
     grades[st_name] = [0 for _ in range(len(grade_values))]
+    grades.at["student_id", st_name] = sid
+    grades.at["subid", st_name] = subid
 else:
     logger.error("Folder name invalid - must start with student name")
     raise IOError()
