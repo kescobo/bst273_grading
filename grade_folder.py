@@ -269,13 +269,17 @@ if origin.exists():
     repo_files_score = 6 * 4 / sum([f != None for f in repo_files])
     grades.at["repo_files", st_name] = repo_files_score
 
-    diff = filecmp.cmpfiles(folder, repo_path, repo_files)
-    logger.debug(diff)
+    repo_readme = os.path.join(repo_path, repo_files[0])
+    repo_script = os.path.join(repo_path, repo_files[1])
+    logger.debug(repo_readme)
+    logger.debug(repo_script)
 
-    if diff[1] == repo_files:
-        repo_match_score = 2
-    else:
-        repo_match_score = len(diff[1]) / sum([len(d) for d in diff])
+    repo_match_score = 0
+    if filecmp.cmp(repo_readme, readme):
+        repo_match_score += 1
+
+    if filecmp.cmp(repo_script, script):
+        repo_match_score += 1
 
     grades.at["repo_match", st_name] = repo_match_score
 
