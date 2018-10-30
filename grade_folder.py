@@ -290,7 +290,7 @@ for g in grades.index:
         logger.debug(type(score))
         grades.at[g, st_name] = score
 
-grades.at["total", st_name] = sum(grades.loc[grade_fields[0:-1], st_name])
+grades.at["total", st_name] = sum(grades.loc[grade_fields[2:-1], st_name])
 
 logger.debug(grades)
 
