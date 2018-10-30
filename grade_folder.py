@@ -92,13 +92,14 @@ grade_values = [0,0,4,4,10,2,
 grades = pd.DataFrame(grade_values, columns=["outof"], index=grade_fields)
 
 parse_folder = re.search(r"^([a-z]+)_(late_)?(\d+)_(\d+)", os.path.basename(folder))
+logger.debug(parse_folder.groups)
 if parse_folder:
     st_name = parse_folder.group(1)
-    sid = int(parse_folder.group(2))
-    subid = int(parse_folder.group(3))
+    sid = int(parse_folder.group(3))
+    subid = int(parse_folder.group(4))
 
     late = False
-    if "_late_" in folder:
+    if parse_folder.group(2):
         late = True
 
     logger.info("Starting to grade {}'s project".format(st_name))
@@ -289,7 +290,7 @@ for g in grades.index:
         logger.debug(type(score))
         grades.at[g, st_name] = score
 
-grades.at["total", st_name] = sum(grades.loc[grade_fields[0:-1], st_name])
+grades.at["total", st_name] = sum(grades.loc[grade_fields[2:-1], st_name])
 
 logger.debug(grades)
 
