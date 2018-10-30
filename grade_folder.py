@@ -132,22 +132,22 @@ else:
     logger.error("No README found in {}. Must check manually".format(folder))
     raise ValueError()
 
-if find_file(files, r"^\w+.py$"):
-    script = os.path.join(folder, find_file(files, r"^\w+.py$"))
+if find_file(files, r"^[\w\.]+.py$"):
+    script = os.path.join(folder, find_file(files, r"^[\w\.]+.py$"))
     logger.info("Found script at {}".format(script))
     grades.at["script", st_name] = 10
 else:
     script = None
 
-if find_file(files, r"^\w+.tsv$"):
-    demo_input = os.path.join(folder, find_file(files, r"^\w+.tsv$"))
+if find_file(files, r"^[\w\.]+.tsv$"):
+    demo_input = os.path.join(folder, find_file(files, r"^[\w\.]+.tsv$"))
     logger.info("Found demo_input at {}".format(demo_input))
     grades.at["input", st_name] = 4
 else:
     demo_input = None
 
-if find_file(files, r"^\w+.(pdf|png)$"):
-    demo_output = os.path.join(folder, find_file(files, r"^\w+.(pdf|png)$"))
+if find_file(files, r"^[\w\.]+.(pdf|png)$"):
+    demo_output = os.path.join(folder, find_file(files, r"^[\w\.]+.(pdf|png)$"))
     logger.info("Found demo_output at {}".format(demo_output))
     grades.at["output", st_name] = 4
 else:
@@ -264,7 +264,7 @@ if origin.exists():
     repo.git.pull("origin", "master")
 
     repo_files = [f for f in map(lambda p: find_file(os.listdir(repo_path), p),
-                        [r"(readme|README)", r"^\w+.py$", r"^\w+.tsv$", r"^\w+.(pdf|png)$"])]
+                        [r"(readme|README)", r"^[\w\.]+.py$", r"^[\w\.]+.tsv$", r"^[\w\.]+.(pdf|png)$"])]
     logger.debug(repo_files)
     repo_files_score = 6 * 4 / sum([f != None for f in repo_files])
     grades.at["repo_files", st_name] = repo_files_score
